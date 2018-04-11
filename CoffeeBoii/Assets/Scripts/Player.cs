@@ -12,8 +12,6 @@ public class Player : MonoBehaviour
     float accelerationTimeGrounded  = 0.01f;
     public float moveSpeed = 6;
 
-
-
     float gravity;
     float jumpVelocity;
     Vector3 velocity;
