@@ -6,6 +6,8 @@ public class PlatformController : RaycastController {
     public LayerMask passengerMask;
     public Vector3 move;
 
+    public Vector3[] localWaypoints;
+
     List<PassengerMovement> passengerMovement;
     Dictionary<Transform, Controller2D> passengerDictionary = new Dictionary<Transform, Controller2D>();
 
@@ -138,5 +140,22 @@ public class PlatformController : RaycastController {
             moveBeforePlatform = _moveBeforePlatform;
         }
     }
+
+    private void OnDrawGizmos()
+    {
+        if(localWaypoints != null)
+        {
+            Gizmos.color = Color.red;
+            float size = 0.3f;
+
+            for(int i = 0; i < localWaypoints.Length; i++)
+            {
+                Vector3 globalWaypointPos = localWaypoints[i] + transform.position;
+                Gizmos.DrawLine(globalWaypointPos - Vector3.up * size, globalWaypointPos + Vector3.up * size);
+                Gizmos.DrawLine(globalWaypointPos - Vector3.left * size, globalWaypointPos + Vector3.left * size);
+            }
+        }
+    }
+    
 
 }
