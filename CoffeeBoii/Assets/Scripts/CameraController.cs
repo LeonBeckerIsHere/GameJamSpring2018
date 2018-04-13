@@ -11,6 +11,11 @@ public class CameraController : MonoBehaviour {
     public float verticalSmoothTime;
     public Vector2 focusAreaSize;
 
+    public Color color1;
+    public Color color2;
+
+    public bool upsideDown = false;
+
     FocusArea focusArea;
 
     float currentLookAheadX;
@@ -21,15 +26,76 @@ public class CameraController : MonoBehaviour {
 
     bool lookAheadStopped;
 
+    Camera cam;
+
+    float colorTime;
+    bool colorFlag;
+
 	// Use this for initialization
 	void Start () {
-        focusArea = new FocusArea(target.GetComponent<Collider>().bounds, focusAreaSize);
+        focusArea = new FocusArea(target.GetComponent<BoxCollider2D>().bounds, focusAreaSize);
+        cam = GetComponent<Camera>();
+        colorTime = 0f;
+        colorFlag = true;
 	}
-	
-	// Update is called once per frame
-	void Update () {
-		
-	}
+
+    void FixedUpdate()
+    {
+        if (colorFlag)
+            colorTime += 0.001f;
+        else
+            colorTime -= 0.001f;
+
+        if (colorTime < 0f || colorTime > 1f)
+            colorFlag = !colorFlag;
+
+        cam.backgroundColor = Color.Lerp(color1, color2, Ease(colorTime));
+    }
+
+    float Ease(float x)
+    {
+        return Mathf.Pow(x, 2) / (Mathf.Pow(x, 2) + Mathf.Pow(1 - x, 2));
+    }
+
+
+    void LateUpdate()
+    {
+        focusArea.Update(target.boxCollider.bounds);
+
+        Vector2 focusPosition = focusArea.centre + Vector2.up * verticalOffset;
+
+        if(focusArea.velocity.x != 0)
+        {
+            lookAheadDirX = Mathf.Sign(focusArea.velocity.x);
+            if (Mathf.Sign(target.playerInput.x) == Mathf.Sign(focusArea.velocity.x) && target.playerInput.x != 0)
+            {
+                lookAheadStopped = false;
+                targetLookAheadX = lookAheadDirX * lookAheadDstX;
+            }
+            else if (!lookAheadStopped)
+            {
+                lookAheadStopped = true;
+                targetLookAheadX = currentLookAheadX + (lookAheadDirX * lookAheadDstX - currentLookAheadX) / 4f;
+            }
+        }
+
+        currentLookAheadX = Mathf.SmoothDamp(currentLookAheadX, targetLookAheadX, ref smoothLookVelocityX, lookSmoothTimeX);
+
+        focusPosition.y = Mathf.SmoothDamp(transform.position.y, focusPosition.y, ref smoothVelocityY, verticalSmoothTime);
+        focusPosition += Vector2.right * currentLookAheadX;
+        transform.position = (Vector3)focusPosition + Vector3.forward * -10;
+    }
+
+    void flipCamera()
+    {
+        transform.Rotate(new Vector3(0.0f, 0.0f, 180.0f));
+    }
+
+    void OnDrawGizmos()
+    {
+        Gizmos.color = new Color(1, 0, 0, 0.5f);
+        Gizmos.DrawCube(focusArea.centre, focusAreaSize);
+    }
 
     struct FocusArea
     {
@@ -73,6 +139,11 @@ public class CameraController : MonoBehaviour {
             {
                 shiftY = targetBounds.max.y - top;
             }
+
+            top += shiftY;
+            bottom += shiftY;
+            centre = new Vector2((left + right) / 2, (top + bottom) / 2);
+            velocity = new Vector2(shiftX, shiftY);
 
         }
     }
