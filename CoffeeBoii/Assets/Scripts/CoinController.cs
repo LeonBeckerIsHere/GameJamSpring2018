@@ -21,7 +21,7 @@ public class CoinController : MonoBehaviour
     {
         int index = (int)(Random.value * 4);
         environment.sEList[index] = !environment.sEList[index];
-        //environment.sEList[3] = !environment.sEList[3];
+        //environment.sEList[1] = !environment.sEList[1];
         exit.collected--;
     }
 }
