@@ -12,6 +12,7 @@ public class EnvironmentController : MonoBehaviour {
 
     float grow;
     bool growFlag;
+    Color invis;
 
     float count;
     float angleAmount;
@@ -30,6 +31,8 @@ public class EnvironmentController : MonoBehaviour {
             sEList.Add(false);
 
         grow = 0f;
+        invis = new Color(0, 0, 0, 0);
+
         count = -10f;
         angleAmount = 0.1f;
         firstIter = true;
@@ -58,8 +61,12 @@ public class EnvironmentController : MonoBehaviour {
             if (grow < 0 || grow > 1)
                 growFlag = !growFlag;
 
-            rend.color = new Color(0, 0, 0, grow);
+            rend.color = new Color(0, 0, 0, Ease(grow));
 
+        }
+        else
+        {
+            rend.color = invis;
         }
         if(sEList[2])
         {
@@ -101,4 +108,9 @@ public class EnvironmentController : MonoBehaviour {
             }
         }
 	}
+    float Ease(float x)
+    {
+        return Mathf.Pow(x, 3) / (Mathf.Pow(x, 3) + Mathf.Pow(1 - x, 3));
+    }
 }
+
